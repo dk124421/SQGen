@@ -132,5 +132,5 @@ MEDIA_ROOT = BASE_DIR / "mediafiles"
 
 # Custom Settings for AI Service
 # For better security, use environment variables in production
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = ""
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
