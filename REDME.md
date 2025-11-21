@@ -205,3 +205,4 @@ If you want to add new features, improve UI, or extend AI prompts, feel free to 
 
 📄 License
 This project is open-source under the MIT License.
+
