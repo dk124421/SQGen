@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper mcq-practice-page">
+
+    <!-- Setup Section -->
+    <section id="setup-section" class="glass-card floating-card">
+        <h1 class="page-title">Ai MCQ Practice System</h1>
+        <p class="page-subtitle">Hone your knowledge with an AI-powered adaptive test. Define your topic and begin your training session.</p>
+
+        <form id="mcq-form" class="futuristic-form" method="POST" action="{% url 'mcq_test' %}">
+            {% csrf_token %}
+            <div class="form-grid-mcq">
+                <!-- Topic Input -->
+                <div class="form-group">
+                    <label for="topic">Topic / Content</label>
+                    <input type="text" id="topic" name="topic" class="futuristic-input" placeholder="e.g., Python Data Structures" required>
+                </div>
+                
+                <!-- Difficulty Select -->
+                <div class="form-group">
+                    <label for="difficulty-mcq">Difficulty</label>
+                    <select id="difficulty-mcq" name="difficulty" class="futuristic-input">
+                        <option value="Easy">Easy</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+
+                <!-- Number of Questions -->
+                <div class="form-group">
+                    <label for="num-questions">Number of Questions</label>
+                    <input type="number" id="num-questions" name="num_questions" class="futuristic-input" value="5" min="1" max="20" required>
+                </div>
+            </div>
+            
+            <!-- Start Button -->
+            <button type="submit" id="start-btn" class="neon-button">
+                <span class="button-text">Start Test</span>
+                <span class="loader"></span>
+            </button>
+        </form>
+    </section>
+
+    <!-- Test Section (Hidden by default) -->
+<div id="test-wrapper" class="content-wrapper mcq-practice-page" {% if not mcq_questions %}style="display:none;"{% endif %}>
+
+    <section id="test-section" class="glass-card floating-card">
+        <h1 class="page-title">AI MCQ Practice Session</h1>
+        <p class="page-subtitle">{{ msg|default:"Answer the questions below." }}</p>
+
+        <div id="mcq-container">
+            {% if mcq_questions %}
+                {% for mcq in mcq_questions %}
+                    <div class="mcq-card" 
+                         data-correct-answer="{{ mcq.answer }}" 
+                         data-explanation="{{ mcq.explanation }}">
+                        
+                        <div class="question-text">{{ mcq.question|linebreaksbr }}</div>
+                        
+                        <div class="options-container">
+                            {% for key, option in mcq.options.items %}
+                                <label class="option-label">
+                                    <input type="radio" 
+                                           name="question_{{ forloop.parentloop.counter }}" 
+                                           value="{{ key }}" 
+                                           class="option-input">
+                                    <span class="option-content">{{ key }}) {{ option }}<br></span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="feedback-container" style="display: none;"></div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No questions could be generated. Please try again.</p>
+            {% endif %}
+        </div>
+        
+        {% if mcq_questions %}
+        <button id="submit-test-btn" class="neon-button">Submit Test</button>
+        {% endif %}
+        
+    </section>
+
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/mcq.js' %}"></script>
+{% endblock %}

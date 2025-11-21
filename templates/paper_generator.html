@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper paper-generator-page">
+    
+    <!-- Main Glassmorphic Card -->
+    <section class="glass-card floating-card">
+        <h1 class="page-title">AI Question Paper Generator</h1>
+        <p class="page-subtitle">Design a university-grade exam paper in seconds. Select your parameters and let the AI construct a comprehensive test.</p>
+        
+        <!-- Generator Form -->
+        <form id="paper-form" class="futuristic-form" method="POST" action="{% url 'paper_generator' %}">
+            {% csrf_token %}
+            <div class="form-grid">
+                <!-- Subject Input -->
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" name="subject" class="futuristic-input" placeholder="e.g., Quantum Physics" required>
+                </div>
+                
+                
+                <!-- Difficulty Select -->
+                <div class="form-group">
+                    <label for="difficulty">Difficulty Level</label>
+                    <select id="difficulty" name="difficulty" class="futuristic-input">
+                        <option value="Easy">Easy</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="Hard">Hard</option>
+                        {% comment %} <option value="Expert">Expert</option> {% endcomment %}
+                    </select>
+                </div>
+                
+                <!-- Exam Type Select -->
+                <div class="form-group">
+                    <label for="exam-type">Exam Type</label>
+                    <select id="exam-type" name="exam_type" class="futuristic-input">
+                        {% comment %} <option value="Quiz">Quiz</option> {% endcomment %}
+                        <option value="Midterm Exam" selected>Midterm Exam</option>
+                        <option value="Final Exam">Final Exam</option>
+                        {% comment %} <option value="Assignment">Assignment</option> {% endcomment %}
+                    </select>
+                </div>
+                {% comment %} Syllabus Input {% endcomment %}
+                <div class="form-group" style="grid-column: 1 / -1; display:flex; flex-direction:column; align-items:center;">
+                    <label for="syllabus">Syllabus (Optional)</label>
+                    <textarea id="syllabus" name="syllabus" class="futuristic-input" placeholder="e.g., Chapters 1-5" style="width:100%; max-width:1100px; min-height:300px; box-sizing:border-box; resize:vertical;"></textarea>
+                </div>
+            </div>
+            
+            <!-- Generate Button -->
+            <button type="submit" id="generate-btn" name="generate_paper" class="neon-button" >
+                <span class="button-text">Generate Paper</span>
+                <span class="loader"></span>
+            </button>
+        </form>
+    </section>
+
+    <!-- PDF Viewer -->
+    <section id="output-container" class="glass-card output-section" style="display:none;">
+        <h2 class="output-title">Generated Paper</h2>
+        <iframe id="pdf-viewer" style="width:100%; height:80vh; border:none;"></iframe>
+        <button id="download-btn" class="icon-button">Download PDF</button>
+    </section>
+
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById("paper-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const btn = document.getElementById("generate-btn");
+    const iframe = document.getElementById("pdf-viewer");
+    const container = document.getElementById("output-container");
+
+    btn.classList.add("loading");
+
+    const formData = new FormData(this);
+
+    const response = await fetch("{% url 'paper_generator' %}", {
+        method: "POST",
+        body: formData
+    });
+
+    const blob = await response.blob();
+    const pdfURL = URL.createObjectURL(blob);
+
+    iframe.src = pdfURL;
+
+    // ✔ FIX — make visible
+    container.style.display = "block";
+    container.style.opacity = "1";
+    container.style.transform = "translateY(0)";
+
+    // Download button
+    document.getElementById("download-btn").onclick = () => {
+        const a = document.createElement("a");
+        a.href = pdfURL;
+        a.download = "Question_Paper.pdf";
+        a.click();
+    };
+
+    btn.classList.remove("loading");
+});
+</script>
+{% endblock %}

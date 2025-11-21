@@ -1,0 +1,661 @@
+/* ---
+--- SMART QGEN FUTURISTIC UI (CSS) - LIGHT VIEW
+--- Inspired by: Vision Pro, Glassmorphism, Neon Brutalism
+--- Colors: #00D4FF (Neon Blue), #B026FF (Purple Glow), #F9F9FF (Light BG)
+--- */
+
+/* --- 1. Root Variables & Base Setup --- */
+:root {
+    --font-header: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    
+    --neon-blue: #00D4FF;
+    --neon-purple: #B026FF;
+
+    /* --- LIGHT THEME COLORS --- */
+    --bg-dark: #F9F9FF; /* Was #070415 */
+    --bg-light-dark: #FFFFFF; /* Was #110d22 */
+    --text-primary: #070415; /* Was #ECEBFF */
+    --text-secondary: #4a4a6a; /* Was #a9a4c4 */
+    
+    --glass-bg: rgba(255, 255, 255, 0.5); /* Was rgba(20, 15, 40, 0.5) */
+    --glass-border: rgba(0, 0, 0, 0.08); /* Was rgba(255, 255, 255, 0.1) */
+    --glass-shadow: rgba(0, 212, 255, 0.15); /* Kept the same, neon glow */
+
+    --transition-fast: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    overflow-x: hidden;
+}
+
+/* --- 2. Futuristic Animated Background --- */
+.futuristic-bg {
+    position: relative;
+    min-height: 100vh;
+    background: var(--bg-dark);
+}
+
+/* Animated Gradient Blobs */
+.futuristic-bg::before,
+.futuristic-bg::after {
+    content: '';
+    position: fixed;
+    z-index: -1;
+    filter: blur(120px); /* Slightly less blur on light bg */
+    opacity: 0.3; /* Less intense on light bg */
+    border-radius: 50%;
+    animation: blob-pulse 15s infinite alternate;
+}
+
+.futuristic-bg::before {
+    width: 500px;
+    height: 500px;
+    background: var(--neon-blue);
+    top: -100px;
+    left: -100px;
+}
+
+.futuristic-bg::after {
+    width: 400px;
+    height: 400px;
+    background: var(--neon-purple);
+    bottom: -100px;
+    right: -100px;
+    animation-delay: -7s;
+}
+
+@keyframes blob-pulse {
+    0% { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.3) translate(50px, -50px); }
+}
+
+/* --- 3. Glassmorphic Navigation --- */
+.glass-nav {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1200px;
+    z-index: 1000;
+    
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 10px 30px;
+    box-shadow: 0 8px 32px 0 var(--glass-shadow);
+    transition: var(--transition-fast);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Logo */
+.logo {
+    text-decoration: none;
+}
+.logo-text-glow {
+    filter: drop-shadow(0 0 5px var(--neon-blue));
+    transition: var(--transition-fast);
+}
+.logo:hover .logo-text-glow {
+    filter: drop-shadow(0 0 10px var(--neon-blue)) drop-shadow(0 0 15px var(--neon-purple));
+}
+
+/* Nav Links */
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+}
+
+.nav-link {
+    font-family: var(--font-header);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 10px 15px;
+    border-radius: 12px;
+    position: relative;
+    transition: var(--transition-fast);
+}
+
+.nav-link:hover {
+    color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.05); /* Was rgba(255, 255, 255, 0.1) */
+}
+
+.nav-link.active {
+    color: var(--text-primary);
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+}
+
+/* Active link indicator */
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 15px;
+    right: 15px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+    border-radius: 2px;
+}
+
+/* --- 4. Main Content Layout --- */
+.main-content {
+    padding-top: 120px; /* Space for nav */
+    padding-bottom: 60px;
+}
+
+.content-wrapper {
+    width: 90%;
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* --- 5. Core Components: Cards, Buttons, Inputs --- */
+
+/* Glassmorphic Card (Base for forms/output) */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.1); /* Darker shadow on light bg */
+    transition: var(--transition-slow);
+    border-image: linear-gradient(135deg, rgba(0,0,0,0.1), rgba(0,0,0,0.02)) 1; /* Darker border image */
+}
+
+/* Floating Card Animation */
+.floating-card {
+    animation: float-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+@keyframes float-in {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.glass-card:hover {
+    box-shadow: 0 10px 50px 0 var(--glass-shadow);
+    transform: translateY(-5px);
+}
+
+/* Page Titles */
+.page-title {
+    font-family: var(--font-header);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    background: linear-gradient(90deg, var(--text-primary), var(--text-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: pulse-glow 3s infinite alternate;
+}
+
+.page-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+/* Futuristic Form */
+.futuristic-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.form-grid, .form-grid-mcq {
+    display: grid;
+    gap: 20px;
+}
+.form-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.form-grid-mcq { grid-template-columns: 2fr 1fr 1fr; }
+
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-group label {
+    font-family: var(--font-header);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Futuristic Floating Input */
+.futuristic-input {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    background: rgba(0, 0, 0, 0.03); /* Was rgba(0, 0, 0, 0.2) */
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--text-primary);
+    transition: var(--transition-fast);
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+.futuristic-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.futuristic-input:focus {
+    background: rgba(0, 0, 0, 0.01); /* Was rgba(0, 0, 0, 0.1) */
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 15px -2px var(--neon-blue);
+}
+
+/* Select arrow */
+select.futuristic-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234a4a6a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); /* Changed stroke color */
+    background-repeat: no-repeat;
+    background-position: right 18px center;
+    background-size: 16px;
+}
+
+/* Neon Animated Button */
+.neon-button {
+    font-family: var(--font-header);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    padding: 15px 30px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-fast);
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple), var(--neon-blue));
+    background-size: 200% auto;
+    animation: gradient-flow 4s linear infinite;
+    box-shadow: 0 5px 20px -5px var(--neon-purple);
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+@keyframes gradient-flow {
+    0% { background-position: 200% center; }
+    100% { background-position: 0% center; }
+}
+
+.neon-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px 0px var(--neon-blue);
+}
+.neon-button:active {
+    transform: translateY(0);
+}
+
+/* Button Loading State */
+.neon-button .loader {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--text-primary);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: none;
+}
+.neon-button.loading .loader { display: block; }
+.neon-button.loading .button-text { display: none; }
+.neon-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* --- 6. Page 1: Paper Generator Output --- */
+.output-section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+}
+
+.output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 20px;
+}
+
+.output-title {
+    font-family: var(--font-header);
+    font-size: 1.8rem;
+    color: var(--text-primary);
+}
+
+.icon-button {
+    font-family: var(--font-header);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.05); /* Was rgba(255, 255, 255, 0.1) */
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.icon-button svg {
+    stroke: var(--text-secondary); /* Make icon color match text */
+}
+
+.icon-button:hover {
+    color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.1); /* Was rgba(255, 255, 255, 0.2) */
+    border-color: var(--neon-blue);
+}
+.icon-button:hover svg {
+    stroke: var(--text-primary);
+}
+
+/* Generated Paper Styling */
+.paper-sheet {
+    background: rgba(0, 0, 0, 0.02); /* Was rgba(0, 0, 0, 0.1) */
+    border-radius: 12px;
+    padding: 30px;
+    color: var(--text-secondary);
+}
+
+.paper-sheet h1, .paper-sheet h2, .paper-sheet h3 {
+    font-family: var(--font-header);
+    color: var(--text-primary);
+    margin-top: 25px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--neon-blue);
+    padding-bottom: 8px;
+}
+.paper-sheet h1 { font-size: 2rem; }
+.paper-sheet h2 { font-size: 1.5rem; }
+.paper-sheet h3 { font-size: 1.2rem; }
+
+.paper-sheet p {
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 15px;
+}
+
+.paper-sheet ol, .paper-sheet ul {
+    padding-left: 25px;
+    margin-bottom: 20px;
+}
+.paper-sheet li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+/* --- 7. Page 2: MCQ Practice System --- */
+
+.test-container {
+    perspective: 1500px; /* For 3D floating card effect */
+}
+
+/* 3D Floating MCQ Card */
+.mcq-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.1); /* Darker shadow */
+    transition: all 0.4s cubic-bezier(0.1, 0.7, 0.3, 1);
+    transform: translateZ(0); /* Hardware acceleration */
+    
+    /* Animation */
+    opacity: 0;
+    animation: float-in 0.5s ease-out forwards;
+}
+
+.mcq-card:hover {
+    transform: translateZ(20px) rotateX(2deg) rotateY(-2deg);
+    box-shadow: 0 15px 50px 0 var(--glass-shadow);
+}
+
+.mcq-question {
+    font-family: var(--font-header);
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.mcq-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Futuristic Toggle (Radio Button) */
+.futuristic-toggle {
+    display: block;
+    position: relative;
+    cursor: pointer;
+    font-size: 1rem;
+    user-select: none;
+    padding: 15px 20px;
+    padding-left: 55px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.03); /* Was rgba(0, 0, 0, 0.15) */
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    transition: var(--transition-fast);
+}
+
+.futuristic-toggle:hover {
+    background: rgba(0, 0, 0, 0.06); /* Was rgba(0, 0, 0, 0.3) */
+    border-color: rgba(0, 0, 0, 0.1); /* Was rgba(255, 255, 255, 0.3) */
+}
+
+/* Hide default radio */
+.futuristic-toggle input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Custom Checkmark */
+.toggle-checkmark {
+    position: absolute;
+    top: 50%;
+    left: 18px;
+    transform: translateY(-50%);
+    height: 22px;
+    width: 22px;
+    background-color: rgba(0, 0, 0, 0.1); /* Was rgba(0, 0, 0, 0.3) */
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    transition: var(--transition-fast);
+}
+
+/* Glowing dot */
+.toggle-checkmark::after {
+    content: "";
+    position: absolute;
+    display: none;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--neon-blue);
+    box-shadow: 0 0 10px var(--neon-blue);
+}
+
+/* Show dot on check */
+.futuristic-toggle input:checked ~ .toggle-checkmark::after {
+    display: block;
+}
+/* Change border on check */
+.futuristic-toggle input:checked ~ .toggle-checkmark {
+    border-color: var(--neon-blue);
+}
+.futuristic-toggle input:checked ~ .toggle-text {
+    color: var(--text-primary);
+}
+
+
+/* --- 8. Score & Progress Bar --- */
+#score-section {
+    text-align: center;
+}
+.score-value {
+    font-family: var(--font-header);
+    font-size: 4rem;
+    font-weight: 700;
+    margin: 10px 0;
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.score-text {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 12px;
+    background: rgba(0, 0, 0, 0.05); /* Was rgba(0, 0, 0, 0.3) */
+    border-radius: 10px;
+    margin: 30px 0 15px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+}
+
+.progress-bar-fill {
+    height: 100%;
+    width: 0%; /* Controlled by JS */
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+    box-shadow: 0 0 10px var(--neon-blue), 0 0 10px var(--neon-purple);
+    transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.score-percentage {
+    font-family: var(--font-header);
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+}
+
+/* --- 9. Utility & Error States --- */
+@keyframes pulse-glow {
+    0% { filter: drop-shadow(0 0 3px var(--neon-blue)); }
+    100% { filter: drop-shadow(0 0 8px var(--neon-purple)); }
+}
+
+.error-box {
+    display: none;
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 0, 50, 0.1);
+    border: 1px solid rgba(255, 0, 50, 0.3);
+    color: #ffb8c4;
+    border-radius: 12px;
+}
+
+/* --- 10. Responsive Design --- */
+@media (max-width: 768px) {
+    .glass-nav {
+        top: 10px;
+        width: 95%;
+        padding: 10px 15px;
+    }
+    .nav-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .main-content {
+        padding-top: 150px; /* More space for stacked nav */
+    }
+    .content-wrapper {
+        width: 95%;
+    }
+    .glass-card {
+        padding: 25px;
+    }
+    .page-title {
+        font-size: 2rem;
+    }
+    .form-grid, .form-grid-mcq {
+        grid-template-columns: 1fr; /* Stack inputs */
+    }
+    .output-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .mcq-card:hover {
+        transform: translateY(-5px); /* Disable 3D tilt on mobile */
+    }
+}
+
+.output-section.show {
+    opacity: 1;
+    transform: translateY(0);
+}
