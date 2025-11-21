@@ -109,37 +109,37 @@ Smart-QGen-AI/
 
 ### 1️⃣ Clone the repository
 
+```bash
 git clone https://github.com/dk124421/SQGen.git
 cd Smart-QGen-AI
-
-shell
-Copy code
+```
 
 ### 2️⃣ Create virtual environment
 
+```powershell
 python -m venv venv
 venv\Scripts\activate
-
-shell
-Copy code
+```
 
 ### 3️⃣ Install dependencies
 
+```bash
 pip install -r requirements.txt
-
-makefile
-Copy code
+```
 
 ### 4️⃣ Add your OpenRouter API Key  
 Inside `settings.py`
-python
+
+```python
 OPENROUTER_API_KEY = "your-key"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+```
 
 ### 5️⃣ Run the server
-nginx
-Copy code
+
+```bash
 python manage.py runserver
+```
 ⚙️ How It Works
 1. User Inputs Data
 User selects:
@@ -156,9 +156,10 @@ Ensures university-exam format
 
 3. OpenRouter LLM generates the paper
 Model used:
-bash
-Copy code
+
+```text
 meta-llama/llama-3.3-70b-instruct
+```
 
 4. Django converts output into a PDF
 
