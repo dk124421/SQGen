@@ -132,8 +132,7 @@ Copy code
 
 ### 4️⃣ Add your OpenRouter API Key  
 Inside `settings.py`:
-
-```python
+python
 OPENROUTER_API_KEY = "your-key"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 5️⃣ Run the server
