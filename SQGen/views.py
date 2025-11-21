@@ -30,145 +30,147 @@ def paper(request):
         msg = f"Generated {exam_type} paper for {subject} at {difficulty} difficulty {syllabus_text}."
 
         if exam_type.upper() == "FINAL EXAM":
-            prompt = f''''SYSTEM:
-You are an exam paper generator. ALWAYS follow the user’s required structure exactly.
-Output only the question paper — no extra text, no notes, no markdown.
-If a syllabus is provided, generate questions STRICTLY from it.
-If something is NOT in the syllabus, do NOT invent a topic — instead use “[NOT COVERED]”.
-If any question needs a diagram, algorithm, or flowchart, include a text placeholder:
-“DIAGRAM/ALGO: <describe what should be drawn>”.
-
-USER:
-Generate a FINAL Semester University Question Paper using the structure below.
-
-SUBJECT: {subject}
-DIFFICULTY: {difficulty}
-SYLLABUS (Optional):
-{syllabus}
-
-###  GENERAL RULES (VERY IMPORTANT)
-1. Detect the subject type automatically:
-   • If coding-based subject → include programming questions  
-     (Java, Python, Web Development, ML coding, DBMS SQL, OS commands)
-   • If math-heavy subject → include proofs, derivations, numerical problems  
-     (ToC, Automata, DSA analysis, Discrete math)
-   • If real-world/data subjects → include dataset-based questions  
-     (ML, AI, Data Mining)
-   • If system-level → include architecture diagrams  
-     (CN, OS, DBMS)
-   • If theory-heavy → include conceptual questions  
-     (ToC, AI, Distributed Systems)
-
-2. Only include diagrams when the subject naturally uses them  
-   Examples:
-   • DSA → Trees, Graphs, Heap  
-   • CN → Network layers diagram  
-   • DBMS → ER Diagram, Schema diagram  
-   • ToC → DFA/NFA, parse trees  
-   • ML → Model pipeline diagram  
-   • Web Dev → System architecture or flow diagram
-
-3. Dataset-based questions must be included **only for ML / Data Mining / AI**, not for other subjects.
-
-4. Never include explanations or solutions. Only questions.
-
----
-
-###  QUESTION PAPER FORMAT (STRICT)
-
-PART - A  
-Short Questions (5 × 1 = 5 Marks)  
-Rules:  
-• Must contain 5 short, crisp conceptual questions  
-• Limit theory-only definitions  
-• Include small examples if needed  
-• Subject-dependent (detect automatically)
-
----
-
-PART - B  
-Analytical / Long Questions (5 × 5 = 25 Marks)  
-Rules:  
-• Mix of conceptual + analytical + applied questions  
-• If subject supports coding → include one code-writing question  
-• If subject supports diagrams → include exactly one diagram question  
-• If subject supports math → include one problem-solving or derivation question  
-• If subject is ML/data → include one dataset-based scenario  
-• Questions must be clear, structured, and academic
-
----
-
-PART - C  
-Compulsory Problem-Solving / Programming Section (4 × 10 = 40 Marks)  
-Rules:  
-• Choose question type based on subject:
-   - ML/AI → coding, dataset workflows, model evaluation  
-   - DBMS → SQL queries, relational algebra, transactions  
-   - Java/Python/Web Dev → full coding questions, output-based tasks  
-   - DSA → algorithm writing, time complexity, tree/graph operations  
-   - ToC → DFA/NFA, CFG, pumping lemma, TM design  
-   - OS → scheduling, memory allocation, deadlock  
-   - CN → subnetting, routing, protocols  
-• Include pseudo-code or full code where appropriate  
-• Include diagrams ONLY if required  
-• Include real-world use cases when meaningful  
-
----
-
-###  OUTPUT REQUIREMENTS
-• Format must look like real final university paper  
-• Marks must be correctly aligned  
-• No explanations, only questions  
-• No extra text or commentary  
-• Clean academic language  
-• Strictly follow the structure: PART A → PART B → PART C  
-
-''' 
-        else:
-            prompt = f''''SYSTEM:
-You generate clean, structured academic question papers.
-Never include any extra text, suggestions, or formatting outside the required structure.
-Use the syllabus strictly if provided. Never invent topics not in the syllabus.
-
-USER:
-Generate a MIDTERM Semester Question Paper EXACTLY in the following format:
+            prompt = f'''
+Generate a university-level question paper using the following parameters:
 
 SUBJECT: {subject}
 DIFFICULTY LEVEL: {difficulty}
+SYLLABUS (Optional): {syllabus}
 
-PART - A
-Q1 – Compulsory Short Questions (5 × 1 = 5 Marks)
-1. <short question 1> (1 Mark)
-2. <short question 2> (1 Mark)
-3. <short question 3> (1 Mark)
-4. <short question 4> (1 Mark)
-5. <short question 5> (1 Mark)
+If the syllabus is provided, strictly generate questions ONLY from the syllabus. 
+If syllabus is NOT provided, generate based on the subject’s standard university curriculum.
 
-PART - B
-Analytical/Long Questions (Attempt All) (5 × 3 = 15 Marks)
-1. <long question 1> (3 Marks)
-2. <long question 2> (3 Marks)
-3. <long question 3> (3 Marks)
-4. <long question 4> (3 Marks)
-5. <long question 5> (3 Marks)
+GENERAL RULES FOR ALL PAPERS:
+1. Follow the exact structure and marking scheme depending on MIDTERM or FINAL.
+2. Maintain academic exam tone — no extra explanations, no introduction, no summary.
+3. Questions must be clear, unique, and cover complete syllabus breadth.
+4. Use both theory and practical questions.
+5. Create subject-appropriate question styles:
+   - DBMS → SQL queries, schema diagrams, relational algebra, table-based data.
+   - ML → numerical problems, datasets, confusion matrix, algorithm steps.
+   - TOC → automata diagrams, grammar conversions, DFA/NFA tables.
+   - DSA → dry-run, tree/graph diagrams, complexity table.
+   - OS → CPU scheduling tables, memory allocation diagrams.
+   - CN → subnetting tables, packet diagrams.
+   - Java/Web Dev → code-based, debugging, output prediction.
+6. **Include diagrams, pseudo code, flowcharts, tables, datasets when required.**
+7. Tables must be aligned properly.
+8. Difficulty must reflect as:
+   - EASY → conceptual, definitions, direct questions
+   - MEDIUM → application, case-based, moderate reasoning
+   - HARD → deep reasoning, multi-step, numerical and logical problems
 
-PART - C
-Compulsory Problem-Solving Questions (2 × 5 = 10 Marks)
-1. <problem question 1> (5 Marks)
-2. <problem question 2> (5 Marks)
+Generate a FINAL Semester Question Paper in the following exact structure:
 
-OUTPUT RULES:
-• Strict academic tone.
-• No headings outside the format.
-• Use ONLY syllabus content if provided.
-• If a topic is NOT in the syllabus, write “[NOT COVERED]”.
+------------------------------------------
+FINAL SEMESTER EXAM QUESTION PAPER
+SUBJECT: {subject}
+DIFFICULTY: {difficulty}
+------------------------------------------
 
-SYLLABUS (OPTIONAL):
-{syllabus}
+PART – A (5 × 1 = 5 Marks)
+Compulsory Short Questions:
+• 5 questions
+• Concept recall + basic definitions + introductory reasoning
+• No long explanations
 
-END
+PART – B (5 × 5 = 25 Marks)
+Analytical / Long Answer Questions:
+• 5 questions
+• Include deep explanation, derivations, diagrams, algorithms, pseudo code if required
+• For subjects like DBMS/ML/OS/TOC/DSA – include numerical problems or dataset-based questions
 
- '''
+PART – C (4 × 10 = 40 Marks)
+Compulsory Advanced Problem-Solving:
+• 4 full-length questions
+• Include:
+  - numerical problems
+  - dataset / table-based questions
+  - case studies
+  - algorithm implementation
+  - code writing or debugging
+  - multi-part reasoning
+• One of the questions can include an OR option
+
+GENERAL NOTES FOR FINAL:
+• At least 1 question must include a TABLE (if subject fits)
+• At least 1 must involve a DIAGRAM (tree, flowchart, automata, ER diagram, scheduling chart)
+• At least 1 should require PRACTICAL/NUMERICAL solution
+• Avoid repetition
+
+No additional notes, no explanations — Only the question paper.
+
+
+''' 
+        else:
+            prompt = f''''
+Generate a university-level question paper using the following parameters:
+
+SUBJECT: {subject}
+DIFFICULTY LEVEL: {difficulty}
+SYLLABUS (Optional): {syllabus}
+
+If the syllabus is provided, strictly generate questions ONLY from the syllabus. 
+If syllabus is NOT provided, generate based on the subject’s standard university curriculum.
+
+GENERAL RULES FOR ALL PAPERS:
+1. Follow the exact structure and marking scheme depending on MIDTERM or FINAL.
+2. Maintain academic exam tone — no extra explanations, no introduction, no summary.
+3. Questions must be clear, unique, and cover complete syllabus breadth.
+4. Use both theory and practical questions.
+5. Create subject-appropriate question styles:
+   - DBMS → SQL queries, schema diagrams, relational algebra, table-based data.
+   - ML → numerical problems, datasets, confusion matrix, algorithm steps.
+   - TOC → automata diagrams, grammar conversions, DFA/NFA tables.
+   - DSA → dry-run, tree/graph diagrams, complexity table.
+   - OS → CPU scheduling tables, memory allocation diagrams.
+   - CN → subnetting tables, packet diagrams.
+   - Java/Web Dev → code-based, debugging, output prediction.
+6. **Include diagrams, pseudo code, flowcharts, tables, datasets when required.**
+7. Tables must be aligned properly.
+8. Difficulty must reflect as:
+   - EASY → conceptual, definitions, direct questions
+   - MEDIUM → application, case-based, moderate reasoning
+   - HARD → deep reasoning, multi-step, numerical and logical problems
+
+
+Generate a MIDTERM (Internal Assessment) Question Paper in the following exact structure:
+
+------------------------------------------
+MIDTERM EXAM QUESTION PAPER
+SUBJECT: {subject}
+DIFFICULTY: {difficulty}
+------------------------------------------
+
+PART – A (5 × 1 = 5 Marks)
+Short Answer Questions:
+• 5 questions of 1 mark each
+• Definitions, direct concepts, short reasoning
+
+PART – B (5 × 3 = 15 Marks)
+Moderate Analytical Questions:
+• 5 questions
+• Include diagrams/flowcharts only when required
+• Must reflect the difficulty level
+• Balance of conceptual + light practical
+• Questions length: 2 - 4 lines
+
+
+PART – C (2 × 5 = 10 Marks)
+Problem-Solving / Practical:
+• 2 questions
+• Can include:
+  - small dataset or table
+  - short numerical problem
+  - algorithm step tracing
+  - program output or bug-fixing
+• No overly long theory (short-medium practical)
+
+GENERAL NOTES FOR MIDTERM:
+• Include at least ONE table/diagram IF relevant to subject.
+• Must be shorter and lighter than Final Exam.
+
+'''
     
         if prompt:
             
@@ -178,7 +180,8 @@ END
             )
 
             response = client.chat.completions.create(
-                model="meta-llama/llama-3.3-70b-instruct",
+                model="meta-llama/llama-3.3-70b-instruct:free",
+
                 messages=[
                     {"role": "user", "content": prompt}
                     
@@ -187,60 +190,142 @@ END
             paper_content = response.choices[0].message.content
             
             solution_prompt = f'''
-SYSTEM:
-You are an expert exam evaluator. You generate clean, accurate, academic-quality solutions.
-Follow the question numbers exactly.
-Do NOT change the questions.
-Do NOT skip any question.
-Do NOT add any new questions.
-Keep formatting clean and suitable for a PDF.
+You are an expert university examiner.  
+Generate a COMPLETE, HIGH-QUALITY SOLUTION PAPER for the following question paper:
 
-USER:
-Generate a full Solution Set for the following Question Paper.
-
-SUBJECT: {subject}
-DIFFICULTY LEVEL: {difficulty}
-
-QUESTION PAPER:
+=====================================
+      QUESTION PAPER  
+=====================================
 {paper_content}
+=====================================
+       SOLUTION RULES  
+=====================================
 
-If a syllabus was provided earlier, use it to guide the depth and correctness of the solutions:
-SYLLABUS (OPTIONAL):
-{syllabus}
+1) PROVIDE SOLUTIONS FOR EVERY QUESTION  
+Do not skip ANY question, sub-question, or numerical part.
 
-SOLUTION FORMAT (STRICT):
-Provide structured answers like this:
+2) FOLLOW THE SAME STRUCTURE AS THE QUESTION PAPER  
+Use identical numbering:
+PART A → Q1, Q2, Q3 …  
+PART B → Q6, Q7 …  
+PART C → Q11, Q12 …
 
-PART - A SOLUTIONS  
-Q1.1 <Short answer, 2–3 line explanation>  
-Q1.2 <Short answer>  
-Q1.3 <Short answer>  
-Q1.4 <Short answer>  
-Q1.5 <Short answer>
+3) SOLUTION FORMAT REQUIREMENTS
 
-PART - B SOLUTIONS  
-Q2.1 <Detailed explanation 8–12 lines, include diagrams in text form if required>  
-Q2.2 <Explain using steps, derivation or comparison>  
-Q2.3 <Algorithm/flowchart in text format if required>  
-Q2.4 <Case study / real example explanation>  
-Q2.5 <Long explanation with reasoning>
+------------------------------------------
+A) SHORT ANSWER SOLUTIONS (PART A)
+------------------------------------------
+• 3–6 lines per question  
+• Clear definitions  
+• One example (if relevant)  
+• No unnecessary depth  
 
-PART - C SOLUTIONS  
-For programming/problem questions, provide:
-• Full step-by-step reasoning  
-• Pseudocode (if needed)  
-• Flowcharts in text form  
-• Time & space complexity  
-• Final answers clearly highlighted  
+------------------------------------------
+B) LONG ANSWER SOLUTIONS (PART B)
+------------------------------------------
+• Detailed explanation  
+• Step-by-step logic  
+• Diagrams if needed  
+• Algorithms in pseudocode or code  
+• Real examples where applicable  
 
-OUTPUT RULES:
-• No markdown formatting (no **, no ##, no * symbols)  
-• Use only plain text suitable for PDF  
-• No extra commentary  
-• No instructions or system messages  
-• Clean spacing with line breaks between answers  
+------------------------------------------
+C) PROBLEM-SOLVING SOLUTIONS (PART C)
+------------------------------------------
+Solve according to question type:
 
-END.
+------------------------------------------
+1. NUMERICAL PROBLEMS
+------------------------------------------
+• Formula first  
+• Substitute values  
+• Step-by-step calculations  
+• Final answer clearly highlighted:
+
+Final Answer: **value**
+
+------------------------------------------
+2. CODING QUESTIONS
+------------------------------------------
+Use clean code blocks, correct syntax, and comments:
+
+Example (Python)
+def add(a, b):
+return a + b
+
+markdown
+Copy code
+
+Include:
+• Output example  
+• Explanation of code logic  
+
+------------------------------------------
+3. DIAGRAM-BASED QUESTIONS
+------------------------------------------
+Use clean ASCII diagrams where required:
+
+  (q0) --a--> (q1)
+     \        /
+      b      a
+       \    /
+        (q2)
+
+mathematica
+  Root
+ /   \
+A     B
+
+------------------------------------------
+4. TABLE-BASED SOLUTIONS
+------------------------------------------
+Provide clean tables if the answer requires structured data:
+
+| Field | Description |
+|-------|-------------|
+| ID    | Unique key  |
+
+or dataset examples:
+
+| ID | Age | Score |
+|----|-----|--------|
+| 1  | 21  | 89     |
+
+------------------------------------------
+5. PRACTICAL / APPLICATION QUESTIONS
+------------------------------------------
+For ML, AI, DBMS, DSA, WEB, OS etc:
+• Provide practical logic  
+• Algorithms  
+• SQL queries  
+• Small datasets  
+• Flowcharts  
+• Model architectures  
+Only where needed — NOT for every question.
+
+------------------------------------------
+6. SUBJECT-WISE REQUIREMENT HANDLING
+------------------------------------------
+• ML / AI → more practical, dataset-driven, algorithm steps  
+• DBMS → SQL queries + ER diagrams  
+• DSA → tree/graph diagrams  
+• TOC → DFA/NFA diagrams, grammar derivations  
+• Java/WebDev → code + output  
+• CN/OS → tables, buffer calculations, diagrams  
+
+------------------------------------------
+7. LANGUAGE QUALITY
+------------------------------------------
+• Academic tone  
+• Clear structuring  
+• No unnecessary repetition  
+• No additional commentary outside solutions  
+
+=====================================
+END OF SOLUTION PAPER REQUIREMENTS
+=====================================
+
+Now generate the complete SOLUTION PAPER.
 '''
             solution_response = client.chat.completions.create(
                 model="meta-llama/llama-3.3-70b-instruct",
@@ -249,7 +334,7 @@ END.
                 ]
             )
             solution_content = solution_response.choices[0].message.content
-            paper_content += "\n\nSOLUTION SET\n\n" + solution_content
+            paper_content += solution_content
             if paper_content:
                 # ---------- PDF GENERATION (Send to browser) ----------
                 buffer = BytesIO()
