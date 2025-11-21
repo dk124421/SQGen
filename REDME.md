@@ -109,7 +109,7 @@ Smart-QGen-AI/
 
 ### 1️⃣ Clone the repository
 
-git clone https://github.com/yourusername/Smart-QGen-AI.git
+git clone https://github.com/dk124421/SQGen.git
 cd Smart-QGen-AI
 
 shell
@@ -131,11 +131,12 @@ makefile
 Copy code
 
 ### 4️⃣ Add your OpenRouter API Key  
-Inside `settings.py`:
+Inside `settings.py`
 python
 OPENROUTER_API_KEY = "your-key"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-5️⃣ Run the server
+
+### 5️⃣ Run the server
 nginx
 Copy code
 python manage.py runserver
