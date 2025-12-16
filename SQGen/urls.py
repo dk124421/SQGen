@@ -20,11 +20,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from SQGen import views
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.paper,name="paper_generator"),
-    path("mcq", views.mcq,name="mcq_test")
+    path("mcq", views.mcq,name="mcq_test"),
+    path("favicon.ico", RedirectView.as_view(url="/static/images/favicon.ico")),
     
 ]
 

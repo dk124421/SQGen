@@ -1,17 +1,85 @@
-import sys
 from django.shortcuts import render
-from django.conf import settings
 from django.http import HttpResponse
+from django.conf import settings
+
+from io import BytesIO
+from openai import OpenAI
+import re
+
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Table,Image,
+    TableStyle, Spacer, Preformatted
+)
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_LEFT
+from reportlab.lib import colors
+
 from PaperGenerator.models import PaperGenerator
 from MCQTest.models import MCQTest
-from openai import OpenAI, APIError
-from io import BytesIO
-from reportlab.lib.utils import simpleSplit
-from reportlab.pdfgen import canvas
+from utils.diagram_generator import generate_dfa_diagram
+
+# ---------- HELPERS ----------
+def extract_table(lines, start):
+    table = []
+    i = start
+
+    while i < len(lines):
+        line = lines[i].strip()
+
+        # Stop if not a table row
+        if not line.startswith("|") or line.count("|") < 2:
+            break
+
+        # Extract cells safely
+        cells = [c.strip() for c in line.split("|")[1:-1]]
+
+        # Skip separator rows like |----|----|
+        if all(set(c) <= {"-"} for c in cells):
+            i += 1
+            continue
+
+        # Skip empty rows
+        if not any(cells):
+            i += 1
+            continue
+
+        table.append(cells)
+        i += 1
+
+    return table, i
 
 
 
-# Create your views here.
+def extract_code_block(lines, start):
+    code = []
+    i = start + 1
+    while i < len(lines) and not lines[i].startswith("```"):
+        code.append(lines[i])
+        i += 1
+    return "\n".join(code), i + 1
+
+def is_table_row(line):
+    return line.strip().startswith("|") and line.strip().endswith("|")
+
+
+def extract_table(lines, start):
+    table_data = []
+    i = start
+
+    # Read table rows
+    while i < len(lines) and is_table_row(lines[i]):
+        row = [c.strip() for c in lines[i].strip().split("|")[1:-1]]
+        table_data.append(row)
+        i += 1
+
+    # Validate column consistency
+    col_count = len(table_data[0])
+    for row in table_data:
+        if len(row) != col_count:
+            return None, start + 1
+
+    return table_data, i
+
 def paper(request):
     paper_content = None
     msg = None
@@ -97,44 +165,53 @@ GENERAL NOTES FOR FINAL:
 • At least 1 must involve a DIAGRAM (tree, flowchart, automata, ER diagram, scheduling chart)
 • At least 1 should require PRACTICAL/NUMERICAL solution
 • Avoid repetition
+Include diagrams, tables, pseudocode, datasets ONLY when required.
+ALL diagrams must be ASCII (no images).
+ALL tables must be pipe-formatted.
 
+SUBJECT-SPECIFIC RULES
+--------------------------------------------------
+• DBMS → SQL queries, ER diagrams (ASCII), tables
+• ML/AI → datasets, confusion matrix, numerical problems
+• TOC → DFA/NFA ASCII diagrams, grammar conversion
+• DSA → tree/graph ASCII diagrams, dry-run
+• OS → CPU scheduling tables, memory diagrams
+• CN → subnetting tables, packet flow
+• Java/Web → code writing, debugging, output-based
 No additional notes, no explanations — Only the question paper.
 
 
 ''' 
         else:
-            prompt = f''''
-Generate a university-level question paper using the following parameters:
+            prompt = f'''
+You are an expert university examiner.
+
+Generate a UNIVERSITY-LEVEL MIDTERM (INTERNAL) QUESTION PAPER using the following parameters:
 
 SUBJECT: {subject}
 DIFFICULTY LEVEL: {difficulty}
 SYLLABUS (Optional): {syllabus}
 
-If the syllabus is provided, strictly generate questions ONLY from the syllabus. 
-If syllabus is NOT provided, generate based on the subject’s standard university curriculum.
+--------------------------------------------------
+SYLLABUS HANDLING RULE
+--------------------------------------------------
+• If syllabus is PROVIDED → generate questions STRICTLY from it.
+• If syllabus is NOT provided → follow standard university curriculum.
 
-GENERAL RULES FOR ALL PAPERS:
-1. Follow the exact structure and marking scheme depending on MIDTERM or FINAL.
-2. Maintain academic exam tone — no extra explanations, no introduction, no summary.
-3. Questions must be clear, unique, and cover complete syllabus breadth.
-4. Use both theory and practical questions.
-5. Create subject-appropriate question styles:
-   - DBMS → SQL queries, schema diagrams, relational algebra, table-based data.
-   - ML → numerical problems, datasets, confusion matrix, algorithm steps.
-   - TOC → automata diagrams, grammar conversions, DFA/NFA tables.
-   - DSA → dry-run, tree/graph diagrams, complexity table.
-   - OS → CPU scheduling tables, memory allocation diagrams.
-   - CN → subnetting tables, packet diagrams.
-   - Java/Web Dev → code-based, debugging, output prediction.
-6. **Include diagrams, pseudo code, flowcharts, tables, datasets when required.**
-7. Tables must be aligned properly.
-8. Difficulty must reflect as:
-   - EASY → conceptual, definitions, direct questions
-   - MEDIUM → application, case-based, moderate reasoning
-   - HARD → deep reasoning, multi-step, numerical and logical problems
+--------------------------------------------------
+GENERAL RULES
+--------------------------------------------------
+1. Maintain academic exam tone.
+2. NO introduction, NO explanation, NO summary.
+3. Questions must be concise and syllabus-aligned.
+4. Include light practical questions.
+5. Diagrams/tables ONLY when required.
+6. ASCII diagrams only.
+7. Pipe-format tables only.
 
-
-Generate a MIDTERM (Internal Assessment) Question Paper in the following exact structure:
+==================================================
+MIDTERM EXAM STRUCTURE
+==================================================
 
 ------------------------------------------
 MIDTERM EXAM QUESTION PAPER
@@ -143,32 +220,26 @@ DIFFICULTY: {difficulty}
 ------------------------------------------
 
 PART – A (5 × 1 = 5 Marks)
-Short Answer Questions:
-• 5 questions of 1 mark each
-• Definitions, direct concepts, short reasoning
+• Short answer questions
+• Definitions, basic concepts
 
 PART – B (5 × 3 = 15 Marks)
-Moderate Analytical Questions:
-• 5 questions
-• Include diagrams/flowcharts only when required
-• Must reflect the difficulty level
-• Balance of conceptual + light practical
-• Questions length: 2 - 4 lines
-
+• Moderate analytical questions
+• 2–4 line answers
+• Diagrams only if required
 
 PART – C (2 × 5 = 10 Marks)
-Problem-Solving / Practical:
-• 2 questions
-• Can include:
-  - small dataset or table
-  - short numerical problem
-  - algorithm step tracing
-  - program output or bug-fixing
-• No overly long theory (short-medium practical)
+• Practical / problem-solving questions
+• Small numericals, tables, algorithm tracing
 
-GENERAL NOTES FOR MIDTERM:
-• Include at least ONE table/diagram IF relevant to subject.
-• Must be shorter and lighter than Final Exam.
+MIDTERM CONSTRAINTS:
+• Easier and shorter than final exam
+• At least ONE diagram OR table if relevant
+
+--------------------------------------------------
+IMPORTANT:
+Return ONLY the QUESTION PAPER.
+
 
 '''
     
@@ -189,17 +260,23 @@ GENERAL NOTES FOR MIDTERM:
             )
             paper_content = response.choices[0].message.content
             
+            if not response or not response.choices:
+                return HttpResponse("AI response failed. Try again.")
+
+            
             solution_prompt = f'''
 You are an expert university examiner.  
 Generate a COMPLETE, HIGH-QUALITY SOLUTION PAPER for the following question paper:
 
-=====================================
+==============================================================================
       QUESTION PAPER  
-=====================================
-{paper_content}
-=====================================
+==============================================================================
+{paper_content}\n
+\n\n\n
+==============================================================================
        SOLUTION RULES  
-=====================================
+==============================================================================
+
 
 1) PROVIDE SOLUTIONS FOR EVERY QUESTION  
 Do not skip ANY question, sub-question, or numerical part.
@@ -263,13 +340,18 @@ Include:
 ------------------------------------------
 3. DIAGRAM-BASED QUESTIONS
 ------------------------------------------
-Use clean ASCII diagrams where required:
+If a DFA/NFA or graph diagram is required, use this EXACT format:
 
-  (q0) --a--> (q1)
-     \        /
-      b      a
-       \    /
-        (q2)
+[DIAGRAM]
+Type: DFA
+States: q0, q1, q2
+Transitions:
+q0 0 q0
+q0 1 q1
+q1 1 q2
+Final: q2
+
+For other diagrams, use ASCII.
 
 mathematica
   Root
@@ -277,19 +359,17 @@ mathematica
 A     B
 
 ------------------------------------------
-4. TABLE-BASED SOLUTIONS
-------------------------------------------
-Provide clean tables if the answer requires structured data:
-
-| Field | Description |
-|-------|-------------|
-| ID    | Unique key  |
-
-or dataset examples:
+4. TABLE RULES (VERY IMPORTANT):
+• Every table must use PIPE format
+• NO dashed-only rows
+• Each row must contain real values
+• Do NOT include empty columns
+• Example:
 
 | ID | Age | Score |
-|----|-----|--------|
-| 1  | 21  | 89     |
+| 1  | 21  | 89    |
+| 2  | 22  | 91    |
+
 
 ------------------------------------------
 5. PRACTICAL / APPLICATION QUESTIONS
@@ -321,10 +401,15 @@ Only where needed — NOT for every question.
 • No unnecessary repetition  
 • No additional commentary outside solutions  
 
+8. question solution numbering must EXACTLY MATCH the question paper.
+
+9 or question includes an OR option, provide solutions for BOTH options. with same question number.
+
 =====================================
 END OF SOLUTION PAPER REQUIREMENTS
 =====================================
-
+IMPORTANT:
+Return ONLY the SOLUTION PAPER with que number.
 Now generate the complete SOLUTION PAPER.
 '''
             solution_response = client.chat.completions.create(
@@ -334,54 +419,129 @@ Now generate the complete SOLUTION PAPER.
                 ]
             )
             solution_content = solution_response.choices[0].message.content
+            if not response or not response.choices:
+                return HttpResponse("AI response failed. Try again.")
+
             paper_content += solution_content
             if paper_content:
                 # ---------- PDF GENERATION (Send to browser) ----------
                 buffer = BytesIO()
-                pdf = canvas.Canvas(buffer)
-                pdf.setFont("Helvetica", 12)
+                doc = SimpleDocTemplate(
+                    buffer,
+                    rightMargin=40,
+                    leftMargin=40,
+                    topMargin=40,
+                    bottomMargin=40
+                )
 
-                y = 800
-                left_margin = 40
-                right_margin = 40
-                page_width = pdf._pagesize[0]
-                available_width = page_width - left_margin - right_margin
-                line_height = 15
+                styles = getSampleStyleSheet()
 
-                for line in paper_content.split("\n"):
-                    stripped_line = line.strip()
+                styles.add(ParagraphStyle(
+                    name="CustomBody",
+                    fontName="Times-Roman",
+                    fontSize=11,
+                    leading=15,
+                    alignment=TA_LEFT
+                ))
 
-                    # Header detection
-                    if stripped_line.startswith("**") and stripped_line.endswith("**"):
-                        pdf.setFont("Helvetica-Bold", 14)
-                        content = stripped_line.replace("*", "")
-                        pdf.drawString(left_margin, y, content)
-                        pdf.setFont("Helvetica", 12)
-                        y -= line_height * 1.5
-                    else:
-                        cleaned_line = line.replace("*", "")
-                        wrapped_lines = simpleSplit(cleaned_line, "Helvetica", 12, available_width)
+                styles.add(ParagraphStyle(
+                    name="CustomCode",
+                    fontName="Courier",
+                    fontSize=9,
+                    leading=12,
+                    backColor=colors.whitesmoke,
+                    leftIndent=6
+                ))
 
-                        if not wrapped_lines:
-                            wrapped_lines.append('')
+                elements = []
+                lines = paper_content.split("\n")
+                i = 0
 
-                        for segment in wrapped_lines:
-                            pdf.drawString(left_margin, y, segment)
-                            y -= line_height
-                            if y < 40:
-                                pdf.showPage()
-                                pdf.setFont("Helvetica", 12)
-                                y = 800
+                while i < len(lines):
+                    line = lines[i].strip()
 
-                pdf.save()
+                    # ---------- TABLE ----------
+                    if "|" in line and line.strip().startswith("|"):
+                        table_data, i = extract_table(lines, i)
+
+                        # 🚨 CRITICAL SAFETY CHECK
+                        if table_data and all(len(row) > 0 for row in table_data):
+                            table = Table(table_data)
+                            table.setStyle(TableStyle([
+                                ('GRID', (0,0), (-1,-1), 1, colors.black),
+                                ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+                                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                                ('FONT', (0,0), (-1,0), 'Helvetica-Bold'),
+                            ]))
+                            elements.append(table)
+                            elements.append(Spacer(1, 12))
+                        else:
+                            # Fallback to text
+                            for row in table_data:
+                                elements.append(Paragraph(" | ".join(row), styles["CustomBody"]))
+                                elements.append(Spacer(1, 6))
+
+                        continue
+                    # ---------- DIAGRAM ----------
+                    if line == "[DIAGRAM]":
+                        states = []
+                        transitions = []
+                        finals = []
+
+                        i += 1
+                        while i < len(lines) and lines[i].strip():
+                            row = lines[i].strip()
+
+                            if row.startswith("States:"):
+                                states = [s.strip() for s in row.split(":", 1)[1].split(",")]
+
+                            elif row.startswith("Final:"):
+                                finals = [s.strip() for s in row.split(":", 1)[1].split(",")]
+
+                            elif re.match(r"^[a-zA-Z0-9]+\s+[01]\s+[a-zA-Z0-9]+$", row):
+                                src, sym, dst = row.split()
+                                transitions.append((src, sym, dst))
+
+                            i += 1
+
+                        # Render diagram only if valid
+                        if states and transitions:
+                            img_path = generate_dfa_diagram(states, transitions, finals)
+                            if img_path:
+                                elements.append(Image(img_path, width=320, height=160))
+                                elements.append(Spacer(1, 14))
+                            else:
+                                elements.append(Paragraph(
+                                    "Diagram could not be rendered. Please refer to the description above.",
+                                    styles["CustomBody"]
+                                ))
+                        continue
+
+                    # ---------- CODE BLOCK ----------
+                    if line.startswith("```"):
+                        code, i = extract_code_block(lines, i)
+                        elements.append(Preformatted(code, styles["CustomCode"]))
+                        elements.append(Spacer(1, 12))
+                        continue
+
+                    # ---------- NORMAL TEXT ----------
+                    if line:
+                        clean_line = re.sub(r"\*\*(.*?)\*\*", r"\1", line)
+                        elements.append(Paragraph(clean_line, styles["CustomBody"]))
+                        elements.append(Spacer(1, 8))
+
+                    i += 1
+
+                doc.build(elements)
                 buffer.seek(0)
 
-                # ---- Send PDF to browser and display in browser (not save to server) ----
-                
-                response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
-                response['Content-Disposition'] = 'inline; filename="paper.pdf"'
-                response['X-Frame-Options'] = 'ALLOWALL'
-                return response
+                return HttpResponse(
+                    buffer.getvalue(),
+                    content_type="application/pdf",
+                    headers={"Content-Disposition": "inline; filename=paper.pdf"}
+                )
+
+
                 
     return render(request, "paper_generator.html", {"msg": msg})
 

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-f8@3s(wk8%-qcq%utp)u_4d+uc7aqbffx1m1!^q-x4fj)lto^9"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -132,5 +133,5 @@ MEDIA_ROOT = BASE_DIR / "mediafiles"
 
 # Custom Settings for AI Service
 # For better security, use environment variables in production
-OPENROUTER_API_KEY = ""
+OPENROUTER_API_KEY = os.environ.get("")
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"

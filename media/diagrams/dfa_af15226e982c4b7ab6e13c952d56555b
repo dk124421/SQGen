@@ -1,0 +1,81 @@
+digraph {
+	rankdir=LR
+	A [shape=doublecircle]
+	B
+	C
+	D
+	E
+	F
+	G
+	H
+	I
+	J
+	K
+	L
+	M
+	N
+	O
+	P
+	Q
+	R
+	S
+	T
+	U
+	V
+	W
+	X
+	Y
+	Z
+	A -> B [label=0]
+	A -> C [label=1]
+	B -> A [label=0]
+	B -> D [label=1]
+	C -> E [label=0]
+	C -> F [label=1]
+	D -> G [label=0]
+	D -> H [label=1]
+	E -> I [label=0]
+	E -> J [label=1]
+	F -> K [label=0]
+	F -> L [label=1]
+	G -> M [label=0]
+	G -> N [label=1]
+	H -> O [label=0]
+	H -> P [label=1]
+	I -> Q [label=0]
+	I -> R [label=1]
+	J -> S [label=0]
+	J -> T [label=1]
+	K -> U [label=0]
+	K -> V [label=1]
+	L -> W [label=0]
+	L -> X [label=1]
+	M -> Y [label=0]
+	M -> Z [label=1]
+	N -> Q [label=0]
+	N -> Q [label=1]
+	O -> Q [label=0]
+	O -> Q [label=1]
+	P -> Q [label=0]
+	P -> Q [label=1]
+	Q -> Q [label=0]
+	Q -> Q [label=1]
+	R -> Q [label=0]
+	R -> Q [label=1]
+	S -> Q [label=0]
+	S -> Q [label=1]
+	T -> Q [label=0]
+	T -> Q [label=1]
+	U -> Q [label=0]
+	U -> Q [label=1]
+	V -> Q [label=0]
+	V -> Q [label=1]
+	W -> Q [label=0]
+	W -> Q [label=1]
+	X -> Q [label=0]
+	X -> Q [label=1]
+	Y -> Q [label=0]
+	Y -> Q [label=1]
+	Z -> Q [label=0]
+	Z -> Q [label=1]
+}
