@@ -19,6 +19,89 @@ from MCQTest.models import MCQTest
 from utils.diagram_generator import generate_dfa_diagram
 
 # ---------- HELPERS ----------
+FREE_MODELS = [
+    "inclusionai/ling-3.0-flash:free",
+    "google/gemma-4-31b-it:free",
+    "openrouter/free",
+]
+
+def generate_ai_completion(prompt, max_tokens=2048):
+    client = OpenAI(
+        api_key=settings.OPENROUTER_API_KEY,
+        base_url=settings.OPENROUTER_BASE_URL
+    )
+    last_err = None
+    for model_name in FREE_MODELS:
+        try:
+            res = client.chat.completions.create(
+                model=model_name,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=max_tokens
+            )
+            if res and res.choices and len(res.choices) > 0 and res.choices[0].message.content:
+                return res.choices[0].message.content
+        except Exception as e:
+            last_err = e
+            continue
+    raise RuntimeError(f"All free AI model attempts failed. Last error: {last_err}")
+
+
+def parse_mcq_ai_output(ai_output):
+    mcqs = []
+    raw_blocks = re.split(r'\n\s*(?=(?:Q?\d+|Question\s*\d+)[\.\:\)])', ai_output.strip())
+    
+    for block in raw_blocks:
+        lines = [line.strip() for line in block.strip().split('\n') if line.strip()]
+        if not lines:
+            continue
+            
+        question_text = ''
+        options = {}
+        answer = 'A'
+        exp_lines = []
+        is_explanation = False
+        
+        q_match = re.match(r'^(?:Q?\d+|Question\s*\d+)[\.\:\)]\s*(.*)', lines[0], re.IGNORECASE)
+        if q_match:
+            question_text = q_match.group(1).strip()
+        else:
+            question_text = lines[0].strip()
+            
+        for line in lines[1:]:
+            opt_match = re.match(r'^(?:\(?([A-D])[\)\.\:]\s*)(.*)', line, re.IGNORECASE)
+            ans_match = re.search(r'(?:Correct\s*)?Answer\s*[\:\-]?\s*\(?([A-D])\)?', line, re.IGNORECASE)
+            exp_match = re.match(r'^Explanation\s*[\:\-]?\s*(.*)', line, re.IGNORECASE)
+            
+            if opt_match and not is_explanation:
+                opt_letter = opt_match.group(1).upper()
+                opt_val = opt_match.group(2).strip()
+                options[opt_letter] = opt_val
+            elif ans_match and not is_explanation:
+                answer = ans_match.group(1).upper()
+            elif exp_match:
+                is_explanation = True
+                if exp_match.group(1).strip():
+                    exp_lines.append(exp_match.group(1).strip())
+            elif is_explanation:
+                exp_lines.append(line)
+                
+        explanation = ' '.join(exp_lines).strip()
+        
+        if options and question_text:
+            for letter in ['A', 'B', 'C', 'D']:
+                if letter not in options:
+                    options[letter] = f'Option {letter}'
+            mcqs.append({
+                'question': f'Q{len(mcqs)+1}. {question_text}',
+                'options': options,
+                'answer': answer,
+                'explanation': explanation
+            })
+            
+    return mcqs
+
+
+
 def extract_table(lines, start):
     table = []
     i = start
@@ -130,11 +213,11 @@ GENERAL RULES FOR ALL PAPERS:
 
 Generate a FINAL Semester Question Paper in the following exact structure:
 
-------------------------------------------
+------------------------------------------------------------------------------------------
 FINAL SEMESTER EXAM QUESTION PAPER
 SUBJECT: {subject}
 DIFFICULTY: {difficulty}
-------------------------------------------
+------------------------------------------------------------------------------------------
 
 PART – A (5 × 1 = 5 Marks)
 Compulsory Short Questions:
@@ -244,29 +327,17 @@ Return ONLY the QUESTION PAPER.
 '''
     
         if prompt:
-            
-            client = OpenAI(
-                api_key=settings.OPENROUTER_API_KEY,
-                base_url=settings.OPENROUTER_BASE_URL
-            )
-
-            response = client.chat.completions.create(
-                model="meta-llama/llama-3.3-70b-instruct:free",
-
-                messages=[
-                    {"role": "user", "content": prompt}
-                    
-                ]
-            )
-            paper_content = response.choices[0].message.content
-            
-            if not response or not response.choices:
-                return HttpResponse("AI response failed. Try again.")
+            try:
+                paper_content = generate_ai_completion(prompt)
+            except Exception as e:
+                return HttpResponse(f"AI generation failed: {e}")
 
             
             solution_prompt = f'''
 You are an expert university examiner.  
+after the question paper, now Mention 'SOLUTION PAPER'
 Generate a COMPLETE, HIGH-QUALITY SOLUTION PAPER for the following question paper:
+add 2,3 line space after question paper and before solution paper
 
 ==============================================================================
       QUESTION PAPER  
@@ -412,15 +483,10 @@ IMPORTANT:
 Return ONLY the SOLUTION PAPER with que number.
 Now generate the complete SOLUTION PAPER.
 '''
-            solution_response = client.chat.completions.create(
-                model="meta-llama/llama-3.3-70b-instruct",
-                messages=[
-                    {"role": "user", "content": solution_prompt}
-                ]
-            )
-            solution_content = solution_response.choices[0].message.content
-            if not response or not response.choices:
-                return HttpResponse("AI response failed. Try again.")
+            try:
+                solution_content = generate_ai_completion(solution_prompt)
+            except Exception as e:
+                return HttpResponse(f"AI solution generation failed: {e}")
 
             paper_content += solution_content
             if paper_content:
@@ -589,40 +655,11 @@ Q2. ...
 Do NOT include extra text, introduction, or summary.
 '''    
         if prompt:
-            
-            client = OpenAI(
-                api_key=settings.OPENROUTER_API_KEY,
-                base_url=settings.OPENROUTER_BASE_URL
-            )
-
-            response = client.chat.completions.create(
-                model="meta-llama/llama-3.3-70b-instruct",
-                messages=[
-                    {"role": "user", "content": prompt}
-                ]
-            )
+            try:
+                ai_output = generate_ai_completion(prompt)
+            except Exception as e:
+                return HttpResponse(f"AI MCQ generation failed: {e}")
                 
-            mcqs = []
-            blocks = response.choices[0].message.content.strip().split("Q")[1:]
-            for i, block in enumerate(blocks):
-                lines = block.strip().split("\n")
-                if len(lines) < 7: continue # Skip malformed blocks
+            mcqs = parse_mcq_ai_output(ai_output)
 
-                question = f"Q{i+1}. {lines[0][3:]}"
-                options = {
-                    "A": lines[1][3:],
-                    "B": lines[2][3:],
-                    "C": lines[3][3:],
-                    "D": lines[4][3:]
-                }
-                # Fix: Strip potential extra spaces from the answer and explanation
-                answer = lines[5].split(":")[1].strip()
-                explanation = lines[6].split(":",1)[1].strip()
-
-                mcqs.append({
-                    "question": question,
-                    "options": options,
-                        "answer": answer,
-                    "explanation": explanation
-                })
     return render(request, "mcq_test.html", {"msg": msg, "mcq_questions": mcqs})
